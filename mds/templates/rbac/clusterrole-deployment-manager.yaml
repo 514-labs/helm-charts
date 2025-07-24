@@ -1,0 +1,64 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "mds.fullname" . }}-deployment-manager-role
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+rules:
+  # Core resources (pods, services, secrets, configmaps)
+  - apiGroups: [""]
+    resources:
+      - "pods"
+      - "services"
+      - "secrets"
+      - "configmaps"
+      - "endpoints"
+      - "persistentvolumeclaims"
+      - "events"
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # Apps resources (deployments, replicasets, etc.)
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # Batch resources (jobs, cronjobs)
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # Networking resources (ingresses, networkpolicies)
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # RBAC resources
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # ServiceAccount management
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # HorizontalPodAutoscaler
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # PodDisruptionBudget
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # ServiceMonitor for Prometheus
+  - apiGroups: ["monitoring.coreos.com"]
+    resources: ["servicemonitors"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # Get nodes for listing compute classes
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]

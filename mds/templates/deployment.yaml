@@ -1,0 +1,233 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mds.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+    app: mds
+    environment: {{ .Values.deployment.environment }}
+    mds-environment: {{ index .Values.deployment "mds-environment" }}
+  annotations:
+    pulumi.com/skipAwait: "true"
+    pulumi.com/forceConflicts: "true"
+    pulumi.com/forceAdopt: "true"
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: mds
+      environment: {{ .Values.deployment.environment }}
+  template:
+    metadata:
+      labels:
+        app: mds
+        environment: {{ .Values.deployment.environment }}
+        mds-environment: {{ .Values.deployment.environment }}
+      annotations:
+        # Enables the otel-collector-operator to inject the mds-otel-collector sidecar
+        sidecar.opentelemetry.io/inject: "boreal-system/mds-otel-collector"
+    spec:
+      serviceAccountName: {{ include "mds.serviceAccountName" . }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values: [mds]
+                  {{- if eq .Values.deployment.environment "staging" }}
+                  - key: environment
+                    operator: In
+                    values: ["production", "staging"]
+                  {{- end }}
+              topologyKey: kubernetes.io/hostname
+      volumes:
+        - name: moose-compute-class-config
+          configMap:
+            name: moose-resources-compute-class-config
+      containers:
+        - name: mds
+          image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+          imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            # Production flag
+            - name: IS_PRODUCTION
+              value: {{ if eq .Values.deployment.environment "production" }}"true"{{ else }}"false"{{ end }}
+            # MDS Environment
+            - name: MDS_ENVIRONMENT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['mds-environment']
+            # Boreal configuration
+            - name: BOREAL_WEB_HOSTING_URL
+              value: {{ .Values.environment.boreal.webHostingUrl }}
+            - name: BOREAL_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.borealWebhook.name }}
+                  key: secret
+            # Pulumi configuration
+            - name: PULUMI_ORGANIZATION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.pulumi.name }}
+                  key: organization
+            - name: PULUMI_CONFIG_PASSPHRASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.pulumi.name }}
+                  key: passphrase
+            - name: PULUMI_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.pulumi.name }}
+                  key: access-token
+            # Redis configuration
+            - name: REDIS_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: connection-string
+            - name: REDIS_MDS_CLUSTER_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: mds-cluster-prefix
+            - name: REDIS_MDS_REQUEST_CHANNEL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: mds-request-channel
+            - name: REDIS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: region
+            - name: REDIS_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: db-name
+            - name: REDIS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: api-key
+            - name: REDIS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: secret-key
+            - name: REDIS_SUBSCRIPTION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: subscription-id
+            # Redpanda configuration
+            - name: REDPANDA_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: auth-url
+            - name: REDPANDA_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: client-id
+            - name: REDPANDA_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: client-secret
+            - name: REDPANDA_CLUSTER_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: cluster-api-url
+            # Temporal configuration
+            - name: TEMPORAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.temporal.name }}
+                  key: api-key
+            - name: TEMPORAL_NAMESPACE_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.temporal.name }}
+                  key: namespace-region
+            - name: TEMPORAL_NAMESPACE_RETENTION_DAYS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.temporal.name }}
+                  key: namespace-retention-days
+            # Clickhouse configuration
+            - name: CLICKHOUSE_CLOUD_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: cloud-provider
+            - name: CLICKHOUSE_CLOUD_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: cloud-region
+            - name: CLICKHOUSE_CLOUD_ORG_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: org-id
+            - name: CLICKHOUSE_CLOUD_TOKEN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: token-key
+            - name: CLICKHOUSE_CLOUD_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: token-secret
+            # AWS configuration
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.aws.name }}
+                  key: region
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.aws.name }}
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.aws.name }}
+                  key: secret-access-key
+            - name: AWS_BOREAL_CONNECTION_HUB_VPC_ENDPOINT_SERVICE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.aws.name }}
+                  key: boreal-connection-hub-vpc-endpoint-service-name
+            # Default Moose Pod configuration
+            - name: MOOSE_POD_DEFAULT_CPU
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.defaultMoosePod.name }}
+                  key: cpu
+            - name: MOOSE_POD_DEFAULT_MEMORY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.defaultMoosePod.name }}
+                  key: memory
+          volumeMounts:
+            - name: moose-compute-class-config
+              mountPath: /etc/moose-config
+              readOnly: true
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }} 

@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: moose-resources-compute-class-config
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.computeClassConfig.data | nindent 2 }}
