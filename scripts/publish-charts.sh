@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PACKAGES_DIR="${REPO_ROOT}/packages"
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+TEMP_DIR=$(mktemp -d)
 
 echo "🚀 Starting chart publishing process..."
 
@@ -22,20 +23,29 @@ if [ ! -d "${PACKAGES_DIR}" ] || [ -z "$(ls -A ${PACKAGES_DIR}/*.tgz 2>/dev/null
     exit 1
 fi
 
+# Copy files to temp directory before switching branches
+echo "📋 Copying files to temporary directory..."
+cp "${REPO_ROOT}/index.yaml" "${TEMP_DIR}/"
+mkdir -p "${TEMP_DIR}/packages"
+cp "${PACKAGES_DIR}"/*.tgz "${TEMP_DIR}/packages/" 2>/dev/null || true
+
 # Store current changes
 echo "💾 Stashing current changes..."
-git stash push -m "Publishing charts from ${CURRENT_BRANCH}"
+git stash push -m "Publishing charts from ${CURRENT_BRANCH}" || echo "No changes to stash"
 
 # Checkout gh-pages branch
 echo "🔄 Switching to gh-pages branch..."
 git checkout gh-pages
 git pull origin gh-pages
 
-# Copy packaged charts and index
+# Copy packaged charts and index from temp directory
 echo "📦 Copying charts and index..."
-cp "${REPO_ROOT}/index.yaml" .
+cp "${TEMP_DIR}/index.yaml" .
 mkdir -p packages
-cp "${PACKAGES_DIR}"/*.tgz packages/ 2>/dev/null || true
+cp "${TEMP_DIR}/packages"/*.tgz packages/ 2>/dev/null || true
+
+# Clean up temp directory
+rm -rf "${TEMP_DIR}"
 
 # Add and commit changes
 echo "📝 Committing changes..."
