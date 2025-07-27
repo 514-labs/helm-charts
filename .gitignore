@@ -1,0 +1,36 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Helm files
+*.tgz
+*.lock
+.history
+charts/*/charts/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Test files
+test-values*.yaml
+
+# Local development
+/packages/
+/dist/
+
+# Don't commit index.yaml to main branch - it belongs in gh-pages
+/index.yaml 

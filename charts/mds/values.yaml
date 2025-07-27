@@ -154,8 +154,8 @@ secrets:
   # Boreal webhook secrets
   borealWebhook:
     name: "boreal-webhook-secret"  # Updated to match cluster
-    data: {}
-    secret: ""
+    data:
+      secret: ""
 
 # Staging-specific environment variables
 staging:
