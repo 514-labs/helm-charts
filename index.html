@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>514 Labs Helm Charts Repository</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 18px;
+        }
+        .section {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .chart-card {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .chart-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .version-list {
+            margin-top: 15px;
+        }
+        .version-item {
+            background-color: #e3f2fd;
+            display: inline-block;
+            padding: 5px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .latest-version {
+            background-color: #4caf50;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .link {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>514 Labs Helm Charts Repository</h1>
+        <p class="subtitle">Official Helm charts for 514 Labs applications and services</p>
+    </div>
+
+    <div class="section">
+        <h2>🚀 Quick Start</h2>
+        <p>Add this repository to your Helm client:</p>
+        <div class="code-block">
+helm repo add 514labs https://514-labs.github.io/helm-charts/<br>
+helm repo update
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📦 Available Charts</h2>
+        <div id="charts-container">
+            <p>Loading charts...</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📋 Installation Examples</h2>
+        <div class="code-block">
+# Install the latest version<br>
+helm install my-release 514labs/mds<br><br>
+
+# Install a specific version<br>
+helm install my-release 514labs/mds --version 0.3.0<br><br>
+
+# Install with custom values<br>
+helm install my-release 514labs/mds -f my-values.yaml
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📖 Documentation</h2>
+        <p>For detailed documentation and contribution guidelines, visit our <a href="https://github.com/514-labs/helm-charts" class="link">GitHub repository</a>.</p>
+        
+        <h3>Useful Links</h3>
+        <ul>
+            <li><a href="index.yaml" class="link">Repository Index (index.yaml)</a></li>
+            <li><a href="https://github.com/514-labs/helm-charts/tree/main/charts" class="link">Chart Sources</a></li>
+            <li><a href="https://github.com/514-labs/helm-charts/issues" class="link">Report Issues</a></li>
+        </ul>
+    </div>
+
+    <script>
+        // Fetch and parse the index.yaml file
+        fetch('index.yaml')
+            .then(response => response.text())
+            .then(yamlText => {
+                // Simple YAML parser for our specific use case
+                const charts = {};
+                const lines = yamlText.split('\n');
+                let currentChart = null;
+                let currentVersion = null;
+                
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    
+                    // Chart name (under entries)
+                    if (line.match(/^  \w+:$/) && !line.includes('entries:')) {
+                        currentChart = trimmed.replace(':', '');
+                        charts[currentChart] = charts[currentChart] || { versions: [] };
+                    }
+                    
+                    // Version entry
+                    if (line.match(/^  - /) && currentChart) {
+                        currentVersion = {};
+                        charts[currentChart].versions.push(currentVersion);
+                    }
+                    
+                    // Parse version details
+                    if (currentVersion) {
+                        if (trimmed.startsWith('version:')) {
+                            currentVersion.version = trimmed.split(':')[1].trim();
+                        } else if (trimmed.startsWith('description:')) {
+                            currentVersion.description = trimmed.split(':').slice(1).join(':').trim();
+                        } else if (trimmed.startsWith('created:')) {
+                            currentVersion.created = trimmed.split(':').slice(1).join(':').trim().replace(/"/g, '');
+                        } else if (trimmed.startsWith('appVersion:')) {
+                            currentVersion.appVersion = trimmed.split(':')[1].trim().replace(/"/g, '');
+                        }
+                    }
+                });
+                
+                // Render charts
+                const container = document.getElementById('charts-container');
+                container.innerHTML = '';
+                
+                Object.entries(charts).forEach(([name, chart]) => {
+                    const chartDiv = document.createElement('div');
+                    chartDiv.className = 'chart-card';
+                    
+                    const latestVersion = chart.versions[0];
+                    
+                    chartDiv.innerHTML = `
+                        <div class="chart-name">${name}</div>
+                        <p>${latestVersion?.description || 'No description available'}</p>
+                        <p><strong>Latest Version:</strong> ${latestVersion?.version || 'N/A'}</p>
+                        <p><strong>App Version:</strong> ${latestVersion?.appVersion || 'N/A'}</p>
+                        
+                        <div class="version-list">
+                            <strong>Available Versions:</strong><br>
+                            ${chart.versions.map((v, i) => 
+                                `<span class="version-item ${i === 0 ? 'latest-version' : ''}">${v.version}</span>`
+                            ).join('')}
+                        </div>
+                        
+                        <h4 style="margin-top: 20px;">Version History</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Version</th>
+                                    <th>App Version</th>
+                                    <th>Created</th>
+                                    <th>Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${chart.versions.map(v => `
+                                    <tr>
+                                        <td>${v.version}</td>
+                                        <td>${v.appVersion || 'N/A'}</td>
+                                        <td>${v.created ? new Date(v.created).toLocaleDateString() : 'N/A'}</td>
+                                        <td><a href="packages/${name}-${v.version}.tgz" class="link">Download</a></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    container.appendChild(chartDiv);
+                });
+            })
+            .catch(error => {
+                document.getElementById('charts-container').innerHTML = 
+                    '<p style="color: red;">Error loading charts. Please check the console for details.</p>';
+                console.error('Error loading index.yaml:', error);
+            });
+    </script>
+</body>
+</html> 
