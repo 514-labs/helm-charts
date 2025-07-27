@@ -57,6 +57,16 @@ echo ""
 echo "📑 Updating repository index..."
 cd "${REPO_ROOT}"
 
+# Try to fetch existing index.yaml from gh-pages branch
+echo "  📥 Fetching existing index.yaml from gh-pages..."
+if git show origin/gh-pages:index.yaml > index.yaml.tmp 2>/dev/null; then
+    mv index.yaml.tmp index.yaml
+    echo "  ✅ Found existing index.yaml from gh-pages"
+else
+    echo "  ℹ️  No existing index.yaml found in gh-pages"
+    rm -f index.yaml.tmp
+fi
+
 # If index.yaml exists, merge with it; otherwise create new
 if [ -f "index.yaml" ]; then
     echo "  📄 Merging with existing index.yaml..."
