@@ -1,0 +1,59 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mds.fullname" . }}-otel-role
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+rules:
+  # OpenTelemetry instrumentation management
+  - apiGroups: ["opentelemetry.io"]
+    resources: ["instrumentations"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+  
+  # Pod modification for instrumentation
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "patch"]
+  
+  # Deployment modification for instrumentation
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+    verbs: ["get", "list", "patch"]
+  
+  # Jobs modification for instrumentation
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "patch"]
+  
+  # ConfigMaps for instrumentation configuration
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+  
+  # Events for instrumentation status
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  
+  # Watch namespace events
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mds.fullname" . }}-otel-role-binding
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "mds.fullname" . }}-otel-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mds.serviceAccountName" . }}
+    namespace: {{ .Values.namespace | default .Release.Namespace }}

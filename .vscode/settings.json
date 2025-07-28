@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "**/helm-charts/**/templates/**/*.yaml": "helm-template"
+  },
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "css.lint.unknownAtRules": "ignore"
+}

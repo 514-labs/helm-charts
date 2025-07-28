@@ -1,0 +1,12 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "mds.fullname" . }}-namespace-manager-role
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+rules:
+  # Namespace management permissions
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["create", "get", "list", "delete", "patch", "update"]

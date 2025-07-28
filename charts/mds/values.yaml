@@ -1,0 +1,167 @@
+# Default values for mds.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+nameOverride: ""
+fullnameOverride: ""
+namespace: "boreal-system"
+
+# MDS deployment configuration
+deployment:
+  environment: "production"
+  mds-environment: "byoc-org_1234"
+  replicaCount: 1
+  image:
+    repository: "us-central1-docker.pkg.dev/moose-hosting-node/hosting/mds"
+    tag: ""
+    pullPolicy: Always
+
+# Service account configuration
+serviceAccount:
+  name: "mds"
+  annotations: {}
+
+# ConfigMap for compute class resources
+computeClassConfig:
+  data:
+    moose-compute-class-resources.json: |
+      {
+        "f45-lionheart-backen-main-32318c": {
+          "computeClass": {
+            "key": "cloud.google.com/compute-class",
+            "value": "Balanced"
+          },
+          "pod": {
+            "cpu": "16",
+            "memory": "32G"
+          },
+          "service": {
+            "replicas": 1
+          }
+        }
+      }
+
+# OpenTelemetry configuration
+opentelemetry:
+  enabled: false
+  collector:
+    image: "otel/opentelemetry-collector-contrib:0.126.0"
+    mode: "sidecar"
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+
+# Resources for MDS containers
+resources:
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules - Pod anti-affinity is configured in the deployment template
+affinity: {}
+
+# Environment configuration
+environment:
+  # Boreal configuration
+  boreal:
+    webHostingUrl: "https://boreal.cloud"
+    webhookSecret: ""
+
+  # MDS-specific configuration
+  mds:
+    # Default compute resources for Moose pods
+    podDefaultCpu: "500m"  # 1/2 vCPU
+    podDefaultMemory: "1024Mi"
+
+# Secrets configuration - these should be created separately or provided
+secrets:
+  # AWS secrets
+  aws:
+    enabled: false
+    name: "sn-mds-aws-config"
+    data:
+      region: "us-east-2"
+      access-key-id: ""
+      secret-access-key: ""
+      boreal-connection-hub-vpc-endpoint-service-name: ""
+  
+  redis:
+    enabled: false
+    name: "sn-redis-config"
+    data:
+      connection-string: ""
+      mds-cluster-prefix: ""
+      mds-request-channel: "mds-request"
+      region: "us-central1"
+      db-name: "boreal"
+      api-key: ""
+      secret-key: ""
+      subscription-id: ""
+  
+  pulumi:
+    enabled: false
+    name: "sn-mds-pulumi-config"
+    data:
+      organization: "514labs"
+      passphrase: ""
+      access-token: ""
+  
+  temporal:
+    enabled: false
+    name: "sn-mds-temporal-config"
+    data:
+      # This is a JWT token, keeping it as is
+      api-key: ""
+      namespace-region: "gcp-us-west1"
+      namespace-retention-days: "30"
+  
+  redpanda:
+    enabled: false
+    name: "sn-mds-redpanda-config"
+    data:
+      auth-url: "https://auth.prd.cloud.redpanda.com/oauth/token"
+      client-id: ""
+      client-secret: ""
+      cluster-api-url: ""
+  
+  clickhouse:
+    enabled: false
+    name: "sn-mds-clickhouse-config"
+    data:
+      cloud-provider: "gcp"
+      cloud-region: "us-central1"
+      org-id: ""
+      token-key: ""
+      token-secret: ""
+
+  # Default Moose Pod configuration
+  defaultMoosePod:
+    name: "sn-mds-moose-pod-default-config"
+    data:
+      cpu: "500m"
+      memory: "1024Mi"
+
+  # Boreal webhook secrets
+  borealWebhook:
+    name: "boreal-webhook-secret"  # Updated to match cluster
+    data:
+      secret: ""
+
+# Staging-specific environment variables
+staging:
+  github514CommercialRepoId: ""
+
+# Datadog configuration (for OpenTelemetry)
+datadog:
+  enabled: false
+  apiKey: "" 

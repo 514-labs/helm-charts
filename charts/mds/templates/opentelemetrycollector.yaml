@@ -1,0 +1,181 @@
+{{- if .Values.opentelemetry.enabled -}}
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: mds-otel-collector
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+spec:
+  mode: {{ .Values.opentelemetry.collector.mode }}
+  image: {{ .Values.opentelemetry.collector.image }}
+  config:
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+          grpc:
+            endpoint: 0.0.0.0:4317
+
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: "mds-metrics"
+              scrape_interval: 10s
+              static_configs:
+                - targets: ["0.0.0.0:9464"]
+
+      hostmetrics:
+        collection_interval: 10s
+        scrapers:
+          paging:
+            metrics:
+              system.paging.utilization:
+                enabled: true
+          cpu:
+            metrics:
+              system.cpu.utilization:
+                enabled: true
+          disk:
+          filesystem:
+            metrics:
+              system.filesystem.utilization:
+                enabled: true
+          load:
+          memory:
+          network:
+          processes:
+
+    processors:
+      # The batch processor batches telemetry data into larger payloads.
+      # It is necessary for the Datadog traces exporter to work optimally,
+      # and is recommended for any production pipeline.
+      batch:
+        send_batch_size: 100
+        send_batch_max_size: 200
+        timeout: 5s
+
+      attributes:
+        actions:
+          - key: mds.environment
+            action: insert
+            from_attribute: mds-environment
+          - key: service.instance.id
+            action: insert
+            from_attribute: k8s.pod.name
+
+      # Resource detection processor to automatically detect resource information
+      resourcedetection/system:
+        detectors: ["env", "system"]
+        timeout: 5s
+        override: false
+        system:
+          hostname_sources: ["lookup", "cname", "dns", "os"]
+          resource_attributes:
+            host.name:
+              enabled: true
+            host.id:
+              enabled: false
+
+      # K8s attributes processor to extract Kubernetes metadata
+      k8sattributes:
+        extract:
+          metadata:
+            - k8s.pod.name
+            - k8s.pod.uid
+            - k8s.deployment.name
+            - k8s.node.name
+            - k8s.namespace.name
+            - k8s.pod.start_time
+            - k8s.replicaset.name
+            - k8s.replicaset.uid
+            - k8s.daemonset.name
+            - k8s.daemonset.uid
+            - k8s.job.name
+            - k8s.job.uid
+            - k8s.container.name
+            - k8s.cronjob.name
+            - k8s.statefulset.name
+            - k8s.statefulset.uid
+            - container.image.name
+            - container.image.tag
+          labels:
+            - tag_name: mds-environment
+              key: mds-environment
+              from: pod
+        passthrough: false
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.ip
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.uid
+          - sources:
+              - from: connection
+
+    exporters:
+      {{- if .Values.datadog.enabled }}
+      datadog:
+        api:
+          key: {{ .Values.datadog.apiKey }}
+          site: datadoghq.com
+
+        traces:
+          span_name_as_resource_name: true
+
+        metrics:
+          resource_attributes_as_tags: true
+          instrumentation_scope_metadata_as_tags: true
+
+        logs:
+          dump_payloads: false
+      {{- end }}
+
+      otlp/tempo:
+        endpoint: tempo-distributor-discovery.boreal-system.svc.cluster.local:4317
+        tls:
+          insecure: true
+
+      prometheusremotewrite:
+        endpoint: "http://mimir-gateway.boreal-system.svc.cluster.local/api/v1/push"
+        resource_to_telemetry_conversion:
+          enabled: true
+
+        headers:
+          X-Scope-OrgID: "mds"
+
+    service:
+      telemetry:
+        logs:
+          level: INFO
+
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, attributes, resourcedetection/system, k8sattributes]
+          exporters: 
+            {{- if .Values.datadog.enabled }}
+            - datadog
+            {{- end }}
+            - otlp/tempo
+
+        metrics:
+          receivers: [prometheus, hostmetrics, otlp]
+          processors: [batch, attributes, resourcedetection/system, k8sattributes]
+          exporters: 
+            {{- if .Values.datadog.enabled }}
+            - datadog
+            {{- end }}
+            - prometheusremotewrite
+
+        logs:
+          receivers: [otlp]
+          processors: [batch, attributes, resourcedetection/system, k8sattributes]
+          exporters:
+            {{- if .Values.datadog.enabled }}
+            - datadog
+            {{- end }}
+{{- end }}
