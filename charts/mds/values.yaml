@@ -4,13 +4,14 @@
 
 # Global settings
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "mds"
 namespace: "boreal-system"
 
 # MDS deployment configuration
 deployment:
   environment: "production"
   mds-environment: "byoc-org_1234"
+  cloud-provider: "gcp"
   replicaCount: 1
   image:
     repository: "us-central1-docker.pkg.dev/moose-hosting-node/hosting/mds"
@@ -94,7 +95,6 @@ secrets:
       access-key-id: ""
       secret-access-key: ""
       boreal-connection-hub-vpc-endpoint-service-name: ""
-  
   redis:
     enabled: false
     name: "sn-redis-config"
@@ -107,7 +107,6 @@ secrets:
       api-key: ""
       secret-key: ""
       subscription-id: ""
-  
   pulumi:
     enabled: false
     name: "sn-mds-pulumi-config"
@@ -115,7 +114,6 @@ secrets:
       organization: "514labs"
       passphrase: ""
       access-token: ""
-  
   temporal:
     enabled: false
     name: "sn-mds-temporal-config"
@@ -124,25 +122,37 @@ secrets:
       api-key: ""
       namespace-region: "gcp-us-west1"
       namespace-retention-days: "30"
-  
   redpanda:
     enabled: false
     name: "sn-mds-redpanda-config"
     data:
+      uses-cloud-service: "true"
       auth-url: "https://auth.prd.cloud.redpanda.com/oauth/token"
       client-id: ""
       client-secret: ""
       cluster-api-url: ""
-  
+      sasl-admin-username: "moose"
+      sasl-admin-password: ""
+      broker: ""
+      sasl-mechanism: "PLAIN"
+      replication-factor: "3"
+      message-timeout-ms: "300000"
+      security-protocol: "SASL_SSL"
   clickhouse:
     enabled: false
     name: "sn-mds-clickhouse-config"
     data:
+      ### Cloud configuration
       cloud-provider: "gcp"
       cloud-region: "us-central1"
       org-id: ""
       token-key: ""
       token-secret: ""
+      ### Non-cloud configuration
+      host: ""
+      host-http-port: ""
+      admin-username: "default"
+      admin-password: ""
 
   # Default Moose Pod configuration
   defaultMoosePod:
@@ -157,6 +167,27 @@ secrets:
     data:
       secret: ""
 
+  # Image pull secret for private container registries
+  imagePull:
+    enabled: false
+    name: "sn-mds-image-pull-secret"
+    data:
+      # Base64 encoded Docker config JSON
+      # IMPORTANT: This should be base64 encoded JSON, NOT a base64 encoded string
+      #
+      # Method 1 - From existing docker-config.json file:
+      #   cat docker-config-30cI9M4reuGKbT6mDiYKHikTiR5.json | base64
+      #
+      # Method 2 - Using kubectl:
+      #   kubectl create secret docker-registry temp-secret \
+      #     --docker-server=<registry> \
+      #     --docker-username=<username> \
+      #     --docker-password=<password> \
+      #     --dry-run=client -o yaml | grep .dockerconfigjson | awk '{print $2}'
+      #
+      # DO NOT use jq '@json' as it will double-encode the content
+      dockerConfigJson: ""
+
 # Staging-specific environment variables
 staging:
   github514CommercialRepoId: ""
@@ -164,4 +195,4 @@ staging:
 # Datadog configuration (for OpenTelemetry)
 datadog:
   enabled: false
-  apiKey: "" 
+  apiKey: ""

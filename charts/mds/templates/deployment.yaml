@@ -24,12 +24,16 @@ spec:
       labels:
         app: mds
         environment: {{ .Values.deployment.environment }}
-        mds-environment: {{ .Values.deployment.environment }}
+        mds-environment: {{ index .Values.deployment "mds-environment" }}
       annotations:
         # Enables the otel-collector-operator to inject the mds-otel-collector sidecar
         sidecar.opentelemetry.io/inject: "boreal-system/mds-otel-collector"
     spec:
       serviceAccountName: {{ include "mds.serviceAccountName" . }}
+      {{- if .Values.secrets.imagePull.enabled }}
+      imagePullSecrets:
+        - name: {{ .Values.secrets.imagePull.name }}
+      {{- end }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -63,6 +67,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['mds-environment']
+            - name: MDS_CLOUD_PROVIDER
+              value: {{ index .Values.deployment "cloud-provider" }}
             # Boreal configuration
             - name: BOREAL_WEB_HOSTING_URL
               value: {{ .Values.environment.boreal.webHostingUrl }}
@@ -129,84 +135,182 @@ spec:
                   name: {{ .Values.secrets.redis.name }}
                   key: subscription-id
             # Redpanda configuration
+            - name: USES_REDPANDA_CLOUD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: uses-cloud-service
             - name: REDPANDA_AUTH_URL
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.redpanda.name }}
                   key: auth-url
+                  optional: true
             - name: REDPANDA_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.redpanda.name }}
                   key: client-id
+                  optional: true
             - name: REDPANDA_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.redpanda.name }}
                   key: client-secret
+                  optional: true
             - name: REDPANDA_CLUSTER_API_URL
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.redpanda.name }}
                   key: cluster-api-url
+                  optional: true
+            - name: REDPANDA_SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: sasl-admin-username
+                  optional: true
+            - name: REDPANDA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: sasl-admin-password
+                  optional: true
+            # Moose Redpanda configuration
+            - name: MOOSE_REDPANDA_CONFIG__BROKER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: broker
+            - name: MOOSE_REDPANDA_CONFIG__SASL_MECHANISM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: sasl-mechanism
+            - name: MOOSE_REDPANDA_CONFIG__REPLICATION_FACTOR
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: replication-factor
+            - name: MOOSE_REDPANDA_CONFIG__MESSAGE_TIMEOUT_MS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: message-timeout-ms
+            - name: MOOSE_REDPANDA_CONFIG__SECURITY_PROTOCOL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redpanda.name }}
+                  key: security-protocol
             # Temporal configuration
+            - name: USES_TEMPORAL_CLOUD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.temporal.name }}
+                  key: uses-cloud-service
             - name: TEMPORAL_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.temporal.name }}
                   key: api-key
+                  optional: true
+            - name: TEMPORAL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.temporal.name }}
+                  key: host
             - name: TEMPORAL_NAMESPACE_REGION
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.temporal.name }}
                   key: namespace-region
+                  optional: true
             - name: TEMPORAL_NAMESPACE_RETENTION_DAYS
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.temporal.name }}
                   key: namespace-retention-days
+                  optional: true
             # Clickhouse configuration
+            - name: USES_CLICKHOUSE_CLOUD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: uses-cloud-service
+                  optional: true
             - name: CLICKHOUSE_CLOUD_PROVIDER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: cloud-provider
+                  optional: true
             - name: CLICKHOUSE_CLOUD_REGION
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: cloud-region
+                  optional: true
             - name: CLICKHOUSE_CLOUD_ORG_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: org-id
+                  optional: true
             - name: CLICKHOUSE_CLOUD_TOKEN_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: token-key
+                  optional: true
             - name: CLICKHOUSE_CLOUD_TOKEN_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: token-secret
+                  optional: true
+            - name: CLICKHOUSE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: host
+                  optional: true
+            - name: CLICKHOUSE_HOST_HTTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: host-http-port
+                  optional: true
+            - name: CLICKHOUSE_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: admin-username
+                  optional: true
+            - name: CLICKHOUSE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: admin-password
+                  optional: true
             # AWS configuration
             - name: AWS_REGION
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.aws.name }}
                   key: region
+                  optional: true
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.aws.name }}
                   key: access-key-id
+                  optional: true
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secrets.aws.name }}
                   key: secret-access-key
+                  optional: true
             - name: AWS_BOREAL_CONNECTION_HUB_VPC_ENDPOINT_SERVICE_NAME
               valueFrom:
                 secretKeyRef:
