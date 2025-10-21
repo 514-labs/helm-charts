@@ -104,11 +104,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.redis.name }}
                   key: mds-cluster-prefix
-            - name: REDIS_MDS_REQUEST_CHANNEL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: mds-request-channel
             - name: REDIS_REGION
               valueFrom:
                 secretKeyRef:
