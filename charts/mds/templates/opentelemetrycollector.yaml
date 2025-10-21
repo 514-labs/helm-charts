@@ -139,14 +139,6 @@ spec:
         tls:
           insecure: true
 
-      prometheusremotewrite:
-        endpoint: "http://mimir-gateway.boreal-system.svc.cluster.local/api/v1/push"
-        resource_to_telemetry_conversion:
-          enabled: true
-
-        headers:
-          X-Scope-OrgID: "mds"
-
     service:
       telemetry:
         logs:
