@@ -102,11 +102,6 @@ secrets:
       connection-string: ""
       mds-cluster-prefix: ""
       mds-request-channel: "mds-request"
-      region: "us-central1"
-      db-name: "boreal"
-      api-key: ""
-      secret-key: ""
-      subscription-id: ""
   pulumi:
     enabled: false
     name: "sn-mds-pulumi-config"
