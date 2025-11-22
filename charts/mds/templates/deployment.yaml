@@ -104,31 +104,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.redis.name }}
                   key: mds-cluster-prefix
-            - name: REDIS_REGION
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: region
-            - name: REDIS_DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: db-name
-            - name: REDIS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: api-key
-            - name: REDIS_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: secret-key
-            - name: REDIS_SUBSCRIPTION_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.redis.name }}
-                  key: subscription-id
             # Redpanda configuration
             - name: USES_REDPANDA_CLOUD
               valueFrom:
