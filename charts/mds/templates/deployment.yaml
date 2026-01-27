@@ -49,9 +49,9 @@ spec:
                   {{- end }}
               topologyKey: kubernetes.io/hostname
       volumes:
-        - name: moose-compute-class-config
+        - name: moose-branch-config
           configMap:
-            name: moose-resources-compute-class-config
+            name: branch-config
       containers:
         - name: mds
           image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
@@ -298,10 +298,10 @@ spec:
                   name: {{ .Values.secrets.defaultMoosePod.name }}
                   key: memory
           volumeMounts:
-            - name: moose-compute-class-config
+            - name: moose-branch-config
               mountPath: /etc/moose-config
               readOnly: true
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
-          {{- end }} 
+          {{- end }}

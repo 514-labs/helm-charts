@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: branch-config
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "mds.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mds
+    app.kubernetes.io/managed-by: helm
+data:
+  branch-config.json: {{ dict "branchIds" .Values.branchConfig.branchIds | toJson | quote }}
