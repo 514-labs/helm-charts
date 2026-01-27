@@ -23,25 +23,22 @@ serviceAccount:
   name: "mds"
   annotations: {}
 
-# ConfigMap for compute class resources
-computeClassConfig:
-  data:
-    moose-compute-class-resources.json: |
-      {
-        "f45-lionheart-backen-main-32318c": {
-          "computeClass": {
-            "key": "cloud.google.com/compute-class",
-            "value": "Balanced"
-          },
-          "pod": {
-            "cpu": "16",
-            "memory": "32G"
-          },
-          "service": {
-            "replicas": 1
-          }
-        }
-      }
+# Branch configuration for MDS
+# Each branch can have: computeClass, pod, service, customDomains
+branchConfig:
+  branchIds: {}
+    # Example configuration:
+    # "example-branch-id":
+    #   computeClass:
+    #     key: "cloud.google.com/compute-class"
+    #     value: "Balanced"
+    #   pod:
+    #     cpu: "4"
+    #     memory: "8G"
+    #   service:
+    #     replicas: 1
+    #   customDomains:  # Optional
+    #     - "custom.example.com"
 
 # OpenTelemetry configuration
 opentelemetry:
