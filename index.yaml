@@ -3,6 +3,25 @@ entries:
   mds:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-01-27T15:45:52.168981365Z"
+    description: A Helm chart for the Moose Deployment Service (MDS)
+    digest: 466d2e42fa1e1f6cf2638521aff7ed3bea7737f871135250616752064e864773
+    home: https://github.com/514labs/commercial
+    keywords:
+    - mds
+    - moose
+    - deployment-service
+    - moose-deployment-service
+    maintainers:
+    - email: support@fiveonefour.com
+      name: 514Labs Team
+    name: mds
+    type: application
+    urls:
+    - https://github.com/514-labs/helm-charts/releases/download/mds-chart-0.8.0/mds-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2025-11-22T11:10:04.317245-07:00"
     description: A Helm chart for the Moose Deployment Service (MDS)
     digest: a2c9c6ed4b5e084d93b23f19915524cf136a19cf13a2583ccbd1c3908b406015
@@ -286,4 +305,4 @@ entries:
     urls:
     - https://514-labs.github.io/helm-charts/packages/mds-0.1.0.tgz
     version: 0.1.0
-generated: "2025-11-22T11:10:04.316447-07:00"
+generated: "2026-01-27T15:45:52.169096921Z"
