@@ -80,6 +80,10 @@ environment:
     # Default compute resources for Moose pods
     podDefaultCpu: "500m"  # 1/2 vCPU
     podDefaultMemory: "1024Mi"
+    # OpenTelemetry logging configuration
+    otelLogs:
+      enabled: false
+      endpoint: "https://telemetry.internal.boreal.cloud/ingest/openTelemetryLogs/0.0"
 
 # Secrets configuration - these should be created separately or provided
 secrets:
