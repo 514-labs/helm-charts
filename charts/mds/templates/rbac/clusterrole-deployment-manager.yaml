@@ -67,3 +67,8 @@ rules:
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["httproutes", "gateways", "gatewayclasses", "referencegrants"]
     verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+
+  # OpenTelemetry resources
+  - apiGroups: ["opentelemetry.io"]
+    resources: ["instrumentations", "opentelemetrycollectors"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
