@@ -72,6 +72,11 @@ spec:
             # Boreal configuration
             - name: BOREAL_WEB_HOSTING_URL
               value: {{ .Values.environment.boreal.webHostingUrl }}
+            # OpenTelemetry Logging configuration
+            - name: ENABLE_MOOSE_OTEL_COLLECTOR
+              value: {{ .Values.environment.mds.otelLogs.enabled | quote }}
+            - name: OTEL_LOGS_ENDPOINT
+              value: {{ .Values.environment.mds.otelLogs.endpoint }}
             - name: BOREAL_WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
