@@ -7,16 +7,6 @@ metadata:
   labels:
     {{- include "mds.labels" . | nindent 4 }}
 rules:
-  # OpenTelemetry instrumentation management
-  - apiGroups: ["opentelemetry.io"]
-    resources: ["instrumentations"]
-    verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
-
-  # OpenTelemetry collector management
-  - apiGroups: ["opentelemetry.io"]
-    resources: ["opentelemetrycollectors"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-
   # Pod modification for instrumentation
   - apiGroups: [""]
     resources: ["pods"]
