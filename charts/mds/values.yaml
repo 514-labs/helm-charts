@@ -12,7 +12,7 @@ deployment:
   environment: "production"
   mds-environment: "byoc-org_1234"
   cloud-provider: "gcp"
-  replicaCount: 1
+  replicaCount: 2
   image:
     repository: "us-central1-docker.pkg.dev/moose-hosting-node/hosting/mds"
     tag: ""
@@ -67,6 +67,11 @@ tolerations: []
 
 # Affinity rules - Pod anti-affinity is configured in the deployment template
 affinity: {}
+
+# Pod disruption budget configuration
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
 
 # Environment configuration
 environment:

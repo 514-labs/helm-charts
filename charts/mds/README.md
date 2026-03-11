@@ -67,9 +67,23 @@ helm upgrade -i mds-test ./mds -f ./mds/values-test.yaml --namespace boreal-syst
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `opentelemetry.enabled` | Enable OpenTelemetry collector | `true` |
+| `opentelemetry.enabled` | Enable OpenTelemetry collector | `false` |
 | `opentelemetry.collector.image` | OTel collector image | `otel/opentelemetry-collector-contrib:0.126.0` |
 | `opentelemetry.collector.mode` | Collector mode | `sidecar` |
+
+### Availability
+
+The chart defaults to two MDS replicas and creates a PodDisruptionBudget by default so
+voluntary disruptions, including Karpenter consolidation, can only take down one pod at a time.
+
+```yaml
+deployment:
+  replicaCount: 2
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+```
 
 ### Resources
 
