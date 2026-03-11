@@ -149,6 +149,9 @@ secrets:
       host-http-port: ""
       admin-username: "default"
       admin-password: ""
+      use-ssl: "true"
+      host-port: ""
+      native-port: ""
 
   # Default Moose Pod configuration
   defaultMoosePod:

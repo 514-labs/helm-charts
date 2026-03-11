@@ -59,8 +59,12 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           env:
+            - name: MDS_VERSION
+              value: {{ .Values.deployment.image.tag | quote }}
             # Production flag
             - name: IS_PRODUCTION
+              value: {{ if eq .Values.deployment.environment "production" }}"true"{{ else }}"false"{{ end }}
+            - name: ENABLE_K8S_WATCHER
               value: {{ if eq .Values.deployment.environment "production" }}"true"{{ else }}"false"{{ end }}
             # MDS Environment
             - name: MDS_ENVIRONMENT
@@ -109,6 +113,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.redis.name }}
                   key: mds-cluster-prefix
+            - name: REDIS_MDS_REQUEST_CHANNEL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.redis.name }}
+                  key: mds-request-channel
             # Redpanda configuration
             - name: USES_REDPANDA_CLOUD
               valueFrom:
@@ -266,6 +275,24 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.secrets.clickhouse.name }}
                   key: admin-password
+                  optional: true
+            - name: MOOSE_CLICKHOUSE_CONFIG__USE_SSL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: use-ssl
+                  optional: true
+            - name: MOOSE_CLICKHOUSE_CONFIG__HOST_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: host-port
+                  optional: true
+            - name: MOOSE_CLICKHOUSE_CONFIG__NATIVE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.clickhouse.name }}
+                  key: native-port
                   optional: true
             # AWS configuration
             - name: AWS_REGION
