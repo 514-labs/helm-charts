@@ -1,5 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
+{{- $resourceConfig := default (dict) .Values.resourceConfig }}
+{{- $legacyConfig := default (dict) .Values.branchConfig }}
+{{- $projectIds := ternary (default (dict) $legacyConfig.projectIds) (default (dict) $resourceConfig.projectIds) (empty $resourceConfig.projectIds) }}
+{{- $branchIds := ternary (default (dict) $legacyConfig.branchIds) (default (dict) $resourceConfig.branchIds) (empty $resourceConfig.branchIds) }}
 metadata:
   name: branch-config
   namespace: {{ .Values.namespace | default .Release.Namespace }}
@@ -8,4 +12,4 @@ metadata:
     app.kubernetes.io/component: mds
     app.kubernetes.io/managed-by: helm
 data:
-  branch-config.json: {{ dict "branchIds" .Values.branchConfig.branchIds | toJson | quote }}
+  branch-config.json: {{ dict "projectIds" $projectIds "branchIds" $branchIds | toJson | quote }}

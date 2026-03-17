@@ -23,9 +23,17 @@ serviceAccount:
   name: "mds"
   annotations: {}
 
-# Branch configuration for MDS
-# Each branch can have: computeClass, pod, service, customDomains
-branchConfig:
+# Resource configuration for MDS
+# Each project or branch can have: computeClass, pod, service, customDomains, volumeMounts
+resourceConfig:
+  projectIds: {}
+    # Example configuration:
+    # "example-project-id":
+    #   volumeMounts:
+    #     - name: "shared-pvc"
+    #       storageClassName: "smb"
+    #       storage: "100Gi"
+    #       mountPath: "/mnt/shared"
   branchIds: {}
     # Example configuration:
     # "example-branch-id":
