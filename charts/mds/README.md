@@ -68,8 +68,8 @@ resourceConfig:
   branchIds:
     "example-branch-id":
       pod:
-        cpu: 8
-        memory: 16G
+        cpu: "8"
+        memory: "16G"
 ```
 
 Both maps default to `{}` when unset.

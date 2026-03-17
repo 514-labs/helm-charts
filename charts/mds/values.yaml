@@ -26,27 +26,26 @@ serviceAccount:
 # Resource configuration for MDS
 # Each project or branch can have: computeClass, pod, service, customDomains, volumeMounts
 resourceConfig:
-  projectIds: {}
-    # Example configuration:
-    # "example-project-id":
-    #   volumeMounts:
-    #     - name: "shared-pvc"
-    #       storageClassName: "smb"
-    #       storage: "100Gi"
-    #       mountPath: "/mnt/shared"
-  branchIds: {}
-    # Example configuration:
-    # "example-branch-id":
-    #   computeClass:
-    #     key: "cloud.google.com/compute-class"
-    #     value: "Balanced"
-    #   pod:
-    #     cpu: "4"
-    #     memory: "8G"
-    #   service:
-    #     replicas: 1
-    #   customDomains:  # Optional
-    #     - "custom.example.com"
+  # Example configuration:
+  # projectIds:
+  #   "example-project-id":
+  #     volumeMounts:
+  #       - name: "shared-pvc"
+  #         storageClassName: "smb"
+  #         storage: "100Gi"
+  #         mountPath: "/mnt/shared"
+  # branchIds:
+  #   "example-branch-id":
+  #     computeClass:
+  #       key: "cloud.google.com/compute-class"
+  #       value: "Balanced"
+  #     pod:
+  #       cpu: "4"
+  #       memory: "8G"
+  #     service:
+  #       replicas: 1
+  #     customDomains:  # Optional
+  #       - "custom.example.com"
 
 # OpenTelemetry configuration
 opentelemetry:
