@@ -48,6 +48,33 @@ helm upgrade -i mds-test ./mds -f ./mds/values-test.yaml --namespace boreal-syst
 |-----------|-------------|---------|
 | `serviceAccount.name` | Service account name | `mds` |
 
+### Resource Config
+
+`resourceConfig` is rendered into the `branch-config.json` config map consumed by MDS. The chart supports both project-scoped and branch-scoped overrides:
+
+```yaml
+resourceConfig:
+  projectIds:
+    "example-project-id":
+      volumeMounts:
+        - name: shared-data-a
+          storageClassName: shared-storage-a
+          storage: 100Gi
+          mountPath: /mnt/shared-data-a
+        - name: shared-data-b
+          storageClassName: shared-storage-b
+          storage: 100Gi
+          mountPath: /mnt/shared-data-b
+  branchIds:
+    "example-branch-id":
+      pod:
+        cpu: "8"
+        memory: "16G"
+```
+
+Both maps default to `{}` when unset.
+The template also accepts the legacy `branchConfig` key for compatibility.
+
 ### Secrets Configuration
 #### AWS Secrets
 - `secrets.aws.name`: Name of AWS configuration secret (default: `sn-mds-aws-config`)
