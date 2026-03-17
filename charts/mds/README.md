@@ -55,18 +55,18 @@ helm upgrade -i mds-test ./mds -f ./mds/values-test.yaml --namespace boreal-syst
 ```yaml
 resourceConfig:
   projectIds:
-    "6768036a-cd6d-4603-a973-c3edc20ee9c9":
+    "example-project-id":
       volumeMounts:
-        - name: ddrive-pvc
-          storageClassName: smb157
+        - name: shared-data-a
+          storageClassName: shared-storage-a
           storage: 100Gi
-          mountPath: /mnt/practice-records1
-        - name: edrive-pvc
-          storageClassName: smb161
+          mountPath: /mnt/shared-data-a
+        - name: shared-data-b
+          storageClassName: shared-storage-b
           storage: 100Gi
-          mountPath: /mnt/practice-records2
+          mountPath: /mnt/shared-data-b
   branchIds:
-    "mrm-mrm-automation-main-9f441":
+    "example-branch-id":
       pod:
         cpu: 8
         memory: 16G
